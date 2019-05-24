@@ -371,3 +371,13 @@ body {
         display: none;
     }
 }
+/* Fade transition effect 3x element enter-active-to */
+.fade-enter{
+    opacity: 0;
+}
+.fade-enter-active{
+    transition: opacity 0.5s;
+}
+.fade-enter-to{
+    opacity: 1;
+}

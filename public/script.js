@@ -1,3 +1,6 @@
+// Global load number
+var LOAD_NUM = 4;
+var watcher;
 new Vue({
     el: '#app',
     data() {
@@ -8,7 +11,9 @@ new Vue({
             cart: [],
             search: '',
             lastSearch: '',
-            loading: false
+            loading: false,
+            search: 'dog',
+            results: []
         }
     },
     methods: {
@@ -33,10 +38,12 @@ new Vue({
                 })
             }
         },
+        // Increment Button
         inc(item) {
             item.qty++;
             this.total += item.price
         },
+        // Decriment Button
         dec(item) {
             item.qty--;
             this.total -= item.price
@@ -45,21 +52,50 @@ new Vue({
                 this.cart.splice(i, 1)
             }
         },
+        // Submit function on form
         onSubmit() {
             this.products = []
             this.loading = true
             var path = '/search?q='.concat(this.search)
             this.$http.get(path)
                 .then((response) => {
-                    this.products = response.body
-                    this.lastSearch = this.search
+                    this.results = response.body;
+                    this.lastSearch = this.search;
+                    this.appendResults();
                     this.loading = false
                 })
+        },
+        appendResults() {
+            if (this.products.length < this.results.length) {
+                var toAppend = this.results.slice(
+                    this.products.length,
+                    LOAD_NUM + this.products.length
+                );
+                this.products = this.products.concat(toAppend)
+            }
         }
     },
+    // filter for totals and pricing
     filters: {
         currency: function (price) {
             return "R".concat(price.toFixed(2))
+        }
+    },
+    // submit the search on statup
+    created: function () {
+        this.onSubmit();
+    },
+
+    // Scrollmonitor implement
+    updated() {
+        var sensor = document.querySelector('#product-list-bottom')
+        watcher = scrollMonitor.create(sensor)
+        watcher.enterViewport(this.appendResults)
+    },
+    beforeUpdate() {
+        if (watcher) {
+            watcher.destroy();
+            watcher = null
         }
     }
 });
